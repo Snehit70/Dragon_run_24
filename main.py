@@ -1,50 +1,83 @@
 import pygame
 import sys
+from pygame.sprite import Group
 
-class Dragon:
+from screen_settings import Settings
+from dragon import Dragon
+from obstacles import Obstacle
+
+class Dragon_run:
     """Dragon class"""
     def __init__(self):
         pygame.init()
         
-        #screen dimensions
-        self.screen_width=1200
-        self.screen_heigth=800
-        self.dimensions=(self.screen_width,self.screen_heigth)
+        
+        self.settings = Settings()
+        self.dragon = Dragon()
+        self.obstacles = Obstacle()
+        self.group = Group()
         
         #intializing the screen
-        self.screen = pygame.display.set_mode(self.dimensions)
-        print("Pygame window initialized")
+        self.screen = pygame.display.set_mode(self.settings.dimensions)
+        pygame.display.set_caption("Dragon Run")
+      
+        self.tile = False
+        #initialize clock
+        self.clock = pygame.time.Clock()
         
-        #loading the images
-        self.idle_image = pygame.image.load('images/idle.png')
-        height=self.idle_image.get_height()
-        width =self.idle_image.get_width()
         
-        #scaling the images.
-        self.new_height = self.screen_heigth/8
-        self.scaling_factor = self.new_height/height
-        self.new_width =self.screen_width*self.scaling_factor
-        self.idle_image_1 =pygame.transform.smoothscale(self.idle_image,(int(self.new_width),int(self.new_height)))
-        
-        #setting the idle image
-        self.idle_rect = self.idle_image_1.get_rect()#gets the rect of the image
-        self.idle_rect.bottomleft = (0,self.screen_heigth)
-
     def run(self):
         """Main game loop"""
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.dragon.is_jumping = True
+                        self.dragon.velocity = self.dragon.initial_velocity# -15
+                        self.dragon.on_ground = False
             
+            #Jumping check
+            if self.dragon.is_jumping:
+                self.dragon.idle_rect.y += self.dragon.velocity
+                self.dragon.velocity += self.dragon.gravity
+           
+           #Ground collision check 
+            if self.dragon.idle_rect.bottom >= self.settings.screen_heigth:
+                self.dragon.idle_rect.bottom =self.settings.screen_heigth
+                self.dragon.is_jumping =False
+                self.dragon.on_ground = True
+                self.dragon.velocity = 0  
+            
+ 
             self.screen.fill((128,0,128))  # Fill the screen with white color
-            self.screen.blit(self.idle_image_1, self.idle_rect)  # Blit the image to the screen
+            self.screen.blit(self.dragon.idle_image_1, self.dragon.idle_rect)  # Blit the image to the screen
+            self.screen.blit(self.obstacles.image, self.obstacles.rect)
             pygame.display.flip()  # Update the display
+            
+            
+            
+            #Obstacle check
+            if not self.tile:
+                self.group.add(self.obstacles)
+                self.tile = True
+            
 
-    def dragon_scaling():
-        pass
+            if self.obstacles.rect.x < 0:
+                self.group.remove(self.obstacles)
+                self.tile = False
+                
+
+                
+            print(len(self.group))
+            
+            self.obstacles.update()
+            
+            
+            self.clock.tick(60)
         
 
 if __name__ == "__main__":
-    dragon = Dragon()
-    dragon.run()
+    dragon_main = Dragon_run()
+    dragon_main.run()

@@ -28,7 +28,7 @@ class Obstacle(Sprite):
 
     def update(self):
         """Updating the position of the obstacle."""
-        self.rect.x -= 10
+        self.rect.x -= 6
         
         if self.rect.x <= 0:
             self.rect.x = self.settings.screen_width

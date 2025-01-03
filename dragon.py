@@ -15,16 +15,17 @@ class Dragon(Sprite):
         height = self.image.get_height()
         
         # scaling the idle image
-        self.new_height = self.settings.screen_heigth/6   
+        self.new_height = 120 
         self.scaling_factor = self.new_height/height 
-        self.new_width =self.settings.screen_width*self.scaling_factor      
+        self.new_width =80     
         self.image =pygame.transform.smoothscale(self.image,(int(self.new_width),int(self.new_height)))
         
         
         #setting the idle image
         self.rect = self.image.get_rect()#gets the rect of the image
-        self.rect.bottomleft = (10,700)
+        self.rect.bottomleft = (0,720)
         
+        self.image_mask =pygame.mask.from_surface(self.image)
         #initialize jumpimg of the dragon
         self.start_y =self.settings.screen_heigth
         self.initial_velocity = -15

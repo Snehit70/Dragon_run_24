@@ -24,9 +24,17 @@ class Dragon_run:
  
         #initializing the font and its font type.
         self.font=pygame.font.Font("font/TechnoRaceItalic.otf", 44)
+        self.font_sys=pygame.font.Font(None,22)
+        self.font_sys.set_italic(True)
       
         #initializing the tile movement.
         self.tile = False
+        
+        #initialising the score
+        self.score_of_dragon= 0
+        self.high_score=0
+        
+        self.running =True
         
         #initialize clock
         self.clock = pygame.time.Clock()
@@ -53,38 +61,67 @@ class Dragon_run:
             pygame.display.flip()
         
     def run(self):
-        """Main game loop"""
-        while True:    
-            #events that can be executed on the dragon game
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-                if event.type == pygame.KEYDOWN and not self.dragon.is_jumping:
-                    if event.key == pygame.K_SPACE: #Use space bar to jump
-                        self.dragon.is_jumping = True
-                        self.dragon.velocity = self.dragon.initial_velocity# -15
-                        self.dragon.on_ground = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        self.running =True
+            """Main game loop"""
+            while self.running:    
+                #events that can be executed on the dragon game
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN and not self.dragon.is_jumping:
+                        if event.key == pygame.K_SPACE: #Use space bar to jump
+                            self.dragon.is_jumping = True
+                            self.dragon.velocity = self.dragon.initial_velocity# -15
+                            self.dragon.on_ground = False
+                        
+                # scores the game until dragon is alive
+                self.score_of_dragon =self.score_of_dragon + 1
+                if self.score_of_dragon >self.high_score:
+                    self.high_score =self.score_of_dragon
+                    
+                
+                self. _jumping_checker()
+                self. _On_ground_checker() 
+                #Fill the screen with colour 
+                self.screen.fill((128,0,128))  #white color
+                
+                image_dragon =self.dragon.image_mask.to_surface()
+                image_obstacles=self.obstacles.image_mask.to_surface()
+                
+                #display the dragon and obstacle on the screen
+                self.screen.blit(self.dragon.image, self.dragon.rect)
+                self.screen.blit(self.obstacles.image, self.obstacles.rect)
+                
+                score_run=self.font_sys.render(f"Score:{self.score_of_dragon}",True,(255,255,255))
+                score_rect =score_run.get_rect(center=(self.settings.screen_width // 1.11, self.settings.screen_heigth // 12))
+                self.screen.blit(score_run,score_rect)
+                
+                high_score=self.font_sys.render(f"High Score:{self.high_score}",True,(255,255,255))
+                score_rect_1 =high_score.get_rect(center=(self.settings.screen_width // 1.5 , self.settings.screen_heigth // 12))
+                self.screen.blit(high_score,score_rect_1)
+                
+                #print(self.obstacles.rect.x,self.dragon.rect.x,self.obstacles.rect,self.dragon.rect)
+                
+                # Update the display
+                pygame.display.flip()  
+                
+                self._obstacle_maintainer()
+                
             
-            self. _jumping_checker()
-            self. _On_ground_checker()
-            
-            #Fill the screen with colour
-            self.screen.fill((128,0,128))  #white color
-            #display the dragon and obstacle on the screen
-            self.screen.blit(self.dragon.image, self.dragon.rect)
-            self.screen.blit(self.obstacles.image, self.obstacles.rect)
-            
-            # Update the display
-            pygame.display.flip()  
-            
-            self._obstacle_maintainer()
-        
-            if pygame.sprite.spritecollide(self.dragon, self.group, False):          
-                print("Game Over")
-                sys.exit()
+                if pygame.sprite.spritecollide(self.dragon, self.group,False,pygame.sprite.collide_mask):      
+                    print("Game Over")
+                    self.running =False
+                    self.obstacles.rect.x =0
+                    self.score_of_dragon = 0
 
-            
-            self.clock.tick(60)
+                
+                self.clock.tick(60)
     
 
     
@@ -93,10 +130,14 @@ class Dragon_run:
         text_title = self.font.render("Dragon Run", True, (255, 200, 10))#,(0, 0, 10))
         text_title_rect = text_title.get_rect(center=(self.settings.screen_width // 2, self.settings.screen_heigth // 3))
         self.screen.blit(text_title,text_title_rect)
-        text_instructions = self.font.render("Press Space to Start", True, (255, 200, 10))#,(0, 0, 5))
+        text_instructions = self.font.render(f"Press Space to Start ", True, (255, 200, 10))#,(0, 0, 5))
         text_instructions.set_alpha(240)
         text_rect = text_instructions.get_rect(center=(self.settings.screen_width // 2, self.settings.screen_heigth // 1.5))
         self.screen.blit(text_instructions,text_rect)
+        text_instructions_1 = self.font.render(f"Press 'p' to restart after game over ", True, (255, 200, 10))#,(0, 0, 5))
+        text_instructions.set_alpha(240)
+        text_rect_1 = text_instructions_1.get_rect(center=(self.settings.screen_width // 2, self.settings.screen_heigth // 1.3))
+        self.screen.blit(text_instructions_1,text_rect_1)
 
     def _image_display(self):
         """loading and displaying the image"""
